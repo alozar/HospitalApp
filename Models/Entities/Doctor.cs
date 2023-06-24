@@ -1,12 +1,13 @@
 ﻿using HospitalApp.Models.Entities;
+using HospitalApp.Models.Entities.Interfaces;
 
 namespace HospitalApp.Models;
 
-public partial class Doctor
+public partial class Doctor : IEntity
 {
     public int Id { get; set; }
 
-    public string FullName { get; set; } = null!;
+    public string FullName { get; set; }
 
     public int CabinetId { get; set; }
 

@@ -1,6 +1,8 @@
-﻿namespace HospitalApp.Models.Entities;
+﻿using HospitalApp.Models.Entities.Interfaces;
 
-public partial class Cabinet
+namespace HospitalApp.Models.Entities;
+
+public partial class Cabinet : IEntity
 {
     public int Id { get; set; }
 

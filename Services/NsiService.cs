@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using HospitalApp.Models;
-using HospitalApp.Models.Dto;
+using HospitalApp.Models.Api.ViewModels;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace HospitalApp.Services
@@ -21,31 +22,31 @@ namespace HospitalApp.Services
             _mapper = mapper;
         }
 
-        public List<CabinetDto> GetCabinets()
+        public List<CabinetViewModel> GetCabinets()
         {
-            if (!_cache.TryGetValue("Cabinets", out List<CabinetDto> cabinets))
+            if (!_cache.TryGetValue("Cabinets", out List<CabinetViewModel> cabinets))
             {
-                cabinets = _mapper.Map<List<CabinetDto>>(_context.Cabinets.ToList());
+                cabinets = _mapper.Map<List<CabinetViewModel>>(_context.Cabinets.AsNoTracking().ToList());
                 _cache.Set("Cabinets", cabinets);
             }
             return cabinets;
         }
 
-        public List<DistrictDto> GetDistricts()
+        public List<DistrictViewModel> GetDistricts()
         {
-            if (!_cache.TryGetValue("Districts", out List<DistrictDto> districts))
+            if (!_cache.TryGetValue("Districts", out List<DistrictViewModel> districts))
             {
-                districts = _mapper.Map<List<DistrictDto>>(_context.Districts.ToList());
+                districts = _mapper.Map<List<DistrictViewModel>>(_context.Districts.AsNoTracking().ToList());
                 _cache.Set("Districts", districts);
             }
             return districts;
         }
 
-        public List<SpecializationDto> GetSpecializations()
+        public List<SpecializationViewModel> GetSpecializations()
         {
-            if (!_cache.TryGetValue("Specializations", out List<SpecializationDto> specializations))
+            if (!_cache.TryGetValue("Specializations", out List<SpecializationViewModel> specializations))
             {
-                specializations = _mapper.Map<List<SpecializationDto>>(_context.Specializations.ToList());
+                specializations = _mapper.Map<List<SpecializationViewModel>>(_context.Specializations.AsNoTracking().ToList());
                 _cache.Set("Specializations", specializations);
             }
             return specializations;

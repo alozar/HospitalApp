@@ -1,6 +1,6 @@
 ﻿namespace HospitalApp.Models.Dto;
 
-public partial class SpecializationDto
+public class SpecializationDto
 {
     public int Id { get; set; }
 

@@ -1,6 +1,8 @@
-﻿namespace HospitalApp.Models.Entities;
+﻿using HospitalApp.Models.Entities.Interfaces;
 
-public partial class Patient
+namespace HospitalApp.Models.Entities;
+
+public partial class Patient : IEntity
 {
     public int Id { get; set; }
 

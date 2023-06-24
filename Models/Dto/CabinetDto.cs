@@ -1,6 +1,6 @@
 ﻿namespace HospitalApp.Models.Dto;
 
-public partial class CabinetDto
+public class CabinetDto
 {
     public int Id { get; set; }
 

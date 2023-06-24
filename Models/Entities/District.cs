@@ -1,12 +1,14 @@
-﻿namespace HospitalApp.Models.Entities;
+﻿using HospitalApp.Models.Entities.Interfaces;
 
-public partial class District
+namespace HospitalApp.Models.Entities;
+
+public partial class District : IEntity
 {
     public int Id { get; set; }
 
     public short Num { get; set; }
 
-    public virtual Doctor? Doctor { get; set; }
+    public virtual ICollection<Doctor> Doctors { get; set; } = new List<Doctor>();
 
-    public virtual Patient? Patient { get; set; }
+    public virtual ICollection<Patient> Patients { get; set; } = new List<Patient>();
 }

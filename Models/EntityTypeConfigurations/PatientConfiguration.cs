@@ -22,8 +22,8 @@ namespace HospitalApp.Models.EntityTypeConfigurations
 
             builder.Property(e => e.Surname).HasMaxLength(30);
 
-            builder.HasOne(d => d.District).WithOne(p => p.Patient)
-                .HasForeignKey<Patient>(d => d.Id)
+            builder.HasOne(d => d.District).WithMany(p => p.Patients)
+                .HasForeignKey(d => d.DistrictId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Patient_District");
         }

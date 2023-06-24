@@ -1,13 +1,13 @@
-﻿using HospitalApp.Models.Dto;
+﻿using HospitalApp.Models.Api.ViewModels;
 
 namespace HospitalApp.Services
 {
     public interface INsiService
     {
-        List<CabinetDto> GetCabinets();
+        List<CabinetViewModel> GetCabinets();
 
-        List<DistrictDto> GetDistricts();
+        List<DistrictViewModel> GetDistricts();
 
-        List<SpecializationDto> GetSpecializations();
+        List<SpecializationViewModel> GetSpecializations();
     }
 }

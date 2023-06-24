@@ -1,10 +1,12 @@
-﻿namespace HospitalApp.Models.Entities;
+﻿using HospitalApp.Models.Entities.Interfaces;
 
-public partial class Specialization
+namespace HospitalApp.Models.Entities;
+
+public partial class Specialization : IEntity
 {
     public int Id { get; set; }
 
     public string Name { get; set; } = null!;
 
-    public virtual Doctor? Doctor { get; set; }
+    public virtual ICollection<Doctor> Doctors { get; set; } = new List<Doctor>();
 }

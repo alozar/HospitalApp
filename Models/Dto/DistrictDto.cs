@@ -1,7 +1,6 @@
-﻿namespace HospitalApp.Models.Dto
-    ;
+﻿namespace HospitalApp.Models.Dto;
 
-public partial class DistrictDto
+public class DistrictDto
 {
     public int Id { get; set; }
 

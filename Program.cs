@@ -1,5 +1,6 @@
 using HospitalApp.Infrastructure;
 using HospitalApp.Models;
+using HospitalApp.Models.Entities.Interfaces;
 using HospitalApp.Services;
 using HospitalApp.Services.Interfaces;
 
@@ -44,6 +45,8 @@ public class Program
         builder.Services.AddAutoMapper(typeof(HospitalAppMappingProfile));
 
         builder.Services.AddDbContext<HospitalAppContext>();
+
+        builder.Services.AddTransient<IListEntityService<Doctor>, ListEntityService<Doctor>>();
 
         builder.Services.AddTransient<IDoctorService, DoctorService>();
 

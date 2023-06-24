@@ -18,13 +18,14 @@ namespace HospitalApp.Models.EntityTypeConfigurations
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Doctor_Cabinet");
 
-            builder.HasOne(d => d.District).WithOne(p => p.Doctor)
-                .HasForeignKey<Doctor>(d => d.Id)
+            builder.HasOne(d => d.District).WithMany(p => p.Doctors)
+                .HasForeignKey(d => d.DistrictId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Doctor_District");
+                .HasConstraintName("FK_Doctor_District")
+                .IsRequired(false);
 
-            builder.HasOne(d => d.Specialization).WithOne(p => p.Doctor)
-                .HasForeignKey<Doctor>(d => d.Id)
+            builder.HasOne(d => d.Specialization).WithMany(p => p.Doctors)
+                .HasForeignKey(d => d.SpecializationId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Doctor_Specialization");
         }
