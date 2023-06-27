@@ -6,6 +6,11 @@
 public enum OrderDirection
 {
     /// <summary>
+    /// Без сортировки
+    /// </summary>
+    None = 0,
+
+    /// <summary>
     /// По возрастанию
     /// </summary>
     Asc,

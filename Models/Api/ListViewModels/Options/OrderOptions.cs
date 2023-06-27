@@ -8,10 +8,10 @@ public class OrderOptions
     /// <summary>
     /// Имя столбца
     /// </summary>
-    public string Field { get; set; }
+    public string Field { get; set; } = "Id";
 
     /// <summary>
     /// Направление по возрастанию/убыванию
     /// </summary>
-    public OrderDirection Direction { get; set; }
+    public OrderDirection Direction { get; set; } = OrderDirection.None;
 }
