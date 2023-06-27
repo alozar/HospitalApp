@@ -50,7 +50,7 @@ namespace HospitalApp.Services
                 _context.Patients.AsNoTracking(),
                 options.Filter ?? new PatientFilter(),
                 orderOptions,
-                options.Page);
+                options.Page ?? new PageOptions());
 
             var patients = _context.Patients
                 .Where(d => ids.Contains(d.Id))
@@ -76,7 +76,9 @@ namespace HospitalApp.Services
 
         public void Update(PatientEditModel model)
         {
-            throw new NotImplementedException();
+            var patient = _mapper.Map<Patient>(model);
+            _context.Patients.Update(patient);
+            _context.SaveChanges();
         }
     }
 }
