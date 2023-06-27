@@ -19,6 +19,10 @@ namespace HospitalApp.Infrastructure
                 .ForMember(dest => dest.Cabinet, opt => opt.MapFrom(src => src.Cabinet.Num))
                 .ForMember(dest => dest.Specialization, opt => opt.MapFrom(src => src.Specialization.Name))
                 .ForMember(dest => dest.District, opt => opt.MapFrom(src => src.District.Num));
+
+            CreateMap<Patient, PatientEditModel>().ReverseMap();
+            CreateMap<Patient, PatientViewModel>()
+                .ForMember(dest => dest.District, opt => opt.MapFrom(src => src.District.Num));
         }
     }
 }

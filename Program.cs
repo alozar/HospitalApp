@@ -1,6 +1,6 @@
 using HospitalApp.Infrastructure;
 using HospitalApp.Models;
-using HospitalApp.Models.Entities.Interfaces;
+using HospitalApp.Models.Entities;
 using HospitalApp.Services;
 using HospitalApp.Services.Interfaces;
 
@@ -49,6 +49,8 @@ public class Program
         builder.Services.AddTransient<IListEntityService<Doctor>, ListEntityService<Doctor>>();
 
         builder.Services.AddTransient<IDoctorService, DoctorService>();
+
+        builder.Services.AddTransient<IListEntityService<Patient>, ListEntityService<Patient>>();
 
         builder.Services.AddTransient<IPatientService, PatientService>();
 
