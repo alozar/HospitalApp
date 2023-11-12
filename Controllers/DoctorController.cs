@@ -1,4 +1,5 @@
-﻿using HospitalApp.Models.Api.EditModels;
+﻿using HospitalApp.Infrastructure;
+using HospitalApp.Models.Api.EditModels;
 using HospitalApp.Models.Api.ListViewModels;
 using HospitalApp.Models.Api.ListViewModels.Options;
 using HospitalApp.Models.Api.ViewModels;
@@ -29,6 +30,7 @@ public class DoctorController : ControllerBase
         return Ok(doctor);
     }
 
+    [SerilogLogging]
     [HttpGet]
     public ActionResult<ListViewModel<DoctorViewModel, DoctorFilter>> GetAll([FromQuery] ListOptions<DoctorFilter> options)
     {

@@ -3,6 +3,8 @@ using HospitalApp.Models;
 using HospitalApp.Models.Entities;
 using HospitalApp.Services;
 using HospitalApp.Services.Interfaces;
+using Serilog;
+using Serilog.Events;
 
 namespace HospitalApp;
 
@@ -30,7 +32,19 @@ public class Program
 
     private static WebApplication CreateWebApplication(string[] args)
     {
+
         var builder = WebApplication.CreateBuilder(args);
+
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Override("Microsoft", LogEventLevel.Error)
+            .WriteTo.Console()
+            .WriteTo.File(
+                path: "HospitalApp-.log",
+                rollingInterval: RollingInterval.Day,
+                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
+            .CreateLogger();
+        builder.Logging.ClearProviders();
+        builder.Host.UseSerilog(Log.Logger, true);
 
         builder.Services.AddControllers();
 
