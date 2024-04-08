@@ -57,7 +57,9 @@ namespace HospitalApp.Services
                 .Include(d => d.District)
                 .AsNoTracking();
 
-            var sortPatients = _listPatientService.QueryOrder(patients, orderOptions).ToList();
+            _listPatientService.QueryOrder(ref patients, orderOptions);
+
+            var sortPatients = patients.ToList();
 
             var model = new ListViewModel<PatientViewModel, PatientFilter>
             {

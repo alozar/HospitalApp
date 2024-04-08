@@ -1,80 +1,125 @@
-﻿using HospitalApp.Models.Api.ListViewModels.Options;
+﻿using System.Collections;
+using System.Linq.Expressions;
+using System.Reflection;
+using HospitalApp.Models.Api.ListViewModels.Options;
 using HospitalApp.Models.Entities.Interfaces;
 using HospitalApp.Services.Interfaces;
-using System.Linq.Expressions;
 
 namespace HospitalApp.Services
 {
     public class ListEntityService<E> : IListEntityService<E> where E : IEntity
     {
-        private readonly ParameterExpression pe = Expression.Parameter(typeof(E), "e");
+        private readonly ParameterExpression parameterExpression = Expression.Parameter(typeof(E), "e");
 
         public List<int> GetIds(IQueryable<E> query, FilterOptions filter, OrderOptions orderOptions, PageOptions pageOptions)
         {
-            query = QueryFilter(query, filter);
-            query = QueryOrder(query, orderOptions);
+            QueryFilter(ref query, filter);
+            QueryOrder(ref query, orderOptions);
 
             var count = query.Count();
             pageOptions.Count = count;
             pageOptions.PageTotal = count / pageOptions.PageSize + 1;
 
-            query = QueryPage(query, pageOptions);
+            QueryPage(ref query, pageOptions);
 
             return query.Select(i => i.Id).ToList();
         }
 
-        public IQueryable<E> QueryFilter(IQueryable<E> query, FilterOptions filter)
+        /// <summary>
+        /// Применить фильтр, унаследованный от <see cref="FilterOptions"/>.
+        /// </summary>
+        public void QueryFilter(ref IQueryable<E> query, FilterOptions filter)
         {
             var filterProps = filter.GetType().GetProperties();
-            
-            foreach (var prop in filterProps)
-            {
-                var value =  prop.GetValue(filter);
-                if (value is not null)
-                {
-                    var type = Nullable.GetUnderlyingType(prop.PropertyType) // Убираем Nullable-обертку
-                        ?? prop.PropertyType;
-                    var property = Expression.Property(pe, prop.Name);
-                    var constant = Expression.Constant(value, type);
-                    if (type == typeof(string))
-                    {
-                        var method = typeof(string).GetMethod("Contains", new[] { typeof(string) });
-                        var containsMethodExp = Expression.Call(property, method, constant);
-                        query = query.Where(Expression.Lambda<Func<E, bool>>(containsMethodExp, pe));
-                    }
-                    else
-                    {
-                        query = query.Where(Expression.Lambda<Func<E, bool>>(Expression.Equal(property, constant), pe));
-                    }
-                }
-            };
 
-            return query;
+            foreach (var filterProp in filterProps)
+            {
+                var value = filterProp.GetValue(filter);
+                if (value is null)
+                {
+                    continue;
+                }
+
+                var filterPropType = filterProp.PropertyType;
+                var isCollection = filterPropType.IsGenericType
+                    && new[] { typeof(ICollection<>), typeof(IList<>), typeof(List<>) }.Contains(filterPropType.GetGenericTypeDefinition());
+                var entityProp = GetMatchedEntityProperty(filterProp, isCollection);
+
+                // Превращаем ICollection<T> в List<T> иначе Linq не сможет корректно построить sql
+                var constantType = isCollection
+                    ? typeof(List<>).MakeGenericType(filterPropType.GetGenericArguments())
+                    : entityProp.PropertyType;
+                var property = Expression.Property(parameterExpression, entityProp.Name);
+                var constant = Expression.Constant(value, constantType);
+
+                if (filterPropType == typeof(string))
+                {
+                    var method = filterPropType.GetMethod("Contains");
+                    var containsMethodExpression = Expression.Call(property, method, constant);
+                    query = query.Where(Expression.Lambda<Func<E, bool>>(containsMethodExpression, parameterExpression));
+
+                    continue;
+                }
+
+                // Проверяем на коллекцию
+                if ((value as ICollection) is { Count: > 0 })
+                {
+                    var method = filterPropType.GetMethod("Contains");
+                    var containsMethodExpression = Expression.Call(constant, method, property);
+                    query = query.Where(Expression.Lambda<Func<E, bool>>(containsMethodExpression, parameterExpression));
+
+                    continue;
+                }
+
+                query = query.Where(Expression.Lambda<Func<E, bool>>(Expression.Equal(property, constant), parameterExpression));
+            }
         }
 
-        public IQueryable<E> QueryOrder(IQueryable<E> query, OrderOptions orderOptions)
+        public void QueryOrder(ref IQueryable<E> query, OrderOptions orderOptions)
         {
             if (orderOptions.Direction == OrderDirection.None)
             {
-                return query;
+                return;
             }
             
-            var propExpression = Expression.Property(pe, orderOptions.Field);
+            var propExpression = Expression.Property(parameterExpression, orderOptions.Field);
             var convPropExpression = Expression.Convert(propExpression, typeof(object));
 
-            if (orderOptions.Direction == OrderDirection.Asc) {
-                return query.OrderBy(Expression.Lambda<Func<E, dynamic>>(convPropExpression, pe));
+            if (orderOptions.Direction == OrderDirection.Asc)
+            {
+                query = query.OrderBy(Expression.Lambda<Func<E, dynamic>>(convPropExpression, parameterExpression));
             }
-
-            // OrderDirection.Desc
-            return query.OrderByDescending(Expression.Lambda<Func<E, dynamic>>(convPropExpression, pe));
+            else
+            {
+                // OrderDirection.Desc
+                query = query.OrderByDescending(Expression.Lambda<Func<E, dynamic>>(convPropExpression, parameterExpression));
+            }
         }
 
-        public IQueryable<E> QueryPage(IQueryable<E> query, PageOptions pageOptions)
+        public void QueryPage(ref IQueryable<E> query, PageOptions pageOptions)
         {
-            return query
-            .Skip((pageOptions.PageCurrent - 1) * pageOptions.PageSize)
-            .Take(pageOptions.PageSize);
+            query = query
+                .Skip((pageOptions.PageCurrent - 1) * pageOptions.PageSize)
+                .Take(pageOptions.PageSize);
+        }
+
+        /// <summary>
+        /// Ищем совпадение имени поля фильтра и имени поля EF-сущности.
+        /// </summary>
+        /// <param name="filterProp">Поле фильтра.</param>
+        /// <param name="isCollection">Является ли поле фильтра коллекцией.</param>
+        /// <returns>Найденное поле EF-сущности.</returns>
+        /// <exception cref="InvalidOperationException">Исключение некорректного имени поля фильтра.</exception>
+        private static PropertyInfo GetMatchedEntityProperty(PropertyInfo filterProp, bool isCollection)
+        {
+            var entityProps = typeof(E).GetProperties();
+            var matchedPropName = isCollection
+                ? filterProp.Name[..^1] // Убираем букву 's' с конца имени поля фильтра
+                : filterProp.Name;
+
+            return entityProps.FirstOrDefault(e => e.Name.Equals(matchedPropName, StringComparison.InvariantCultureIgnoreCase))
+                ?? throw new InvalidOperationException(
+                    $"Поле фильтра '{filterProp.Name}' не может сопоставиться ни с одним полем '{typeof(E).Name}'.");
         }
     }
 }
